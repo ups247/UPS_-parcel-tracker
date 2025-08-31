@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mock UPS Tracking System</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    h2 { color: #333; }
+    .customs { color: red; font-weight: bold; }
+    .delivered { color: green; font-weight: bold; }
+    .in-transit { color: orange; }
+  </style>
+</head>
+<body>
+  <h2>📦 UPS Mock Tracking System</h2>
+  <input type="text" id="trackingNumber" placeholder="Enter Your Tracking ID">
+  <button onclick="track()">Track</button>
+  <div id="result"></div>
+
+  <script>
+    // Mock shipments database
+    const shipments = {
+      "MTSO10842424US": [
+        { date: "2025-08-25", location: "Texas, USA", status: "Shipment created" },
+        { date: "2025-08-26", location: "(UPS Office) Fort Worth, Texas, USA", status: "Picked up" },
+        { date: "2025-08-27", location: "(UPS Global Hub) Louisville, Kentucky, USA", status: "In transit to Japan" },
+        { date: "2025-08-28", location: "(Customs Office) Tokyo, Japan", status: "Held at Customs" },
+        { date: "Pending", location: "(Local UPS Office) Minato-ku, Osaka, Japan", status: "Ready for Delivery" },
+        { date: "Pending", location: "Sagami, Seven Town Sengendai Store 1F, Koshigaya-city, Saitama, Japan", status: "Pending Delivery" }
+      ]
+    };
+
+    function track() {
+      const tn = document.getElementById("trackingNumber").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "";
+
+      if (shipments[tn]) {
+        shipments[tn].forEach(event => {
+          let cssClass = "";
+          if (event.status.includes("Customs")) cssClass = "customs";
+          if (event.status.includes("Delivered")) cssClass = "delivered";
+          if (event.status.includes("In transit")) cssClass = "in-transit";
+
+          resultDiv.innerHTML += `<p class="${cssClass}">${event.date} - ${event.location} : ${event.status}</p>`;
+        });
+      } else {
+        resultDiv.innerHTML = "<p style='color:red;'>Tracking number not found</p>";
+      }
+    }
+  </script>
+</body>
+</html>
