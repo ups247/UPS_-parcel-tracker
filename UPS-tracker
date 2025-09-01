@@ -1,121 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UPS Mock Tracking System</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
-    header {
-      background: #332200;
-      color: #fbb034;
-      padding: 15px;
-      text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-    }
-    .tracker-box {
-      background: #fff;
-      margin: 30px auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    input, button {
-      padding: 10px;
-      margin: 10px 5px;
-      font-size: 1em;
-    }
-    button {
-      background: #fbb034;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover { background: #e09b2d; }
-    .timeline {
-      margin-top: 20px;
-      text-align: left;
-    }
-    .event {
-      border-left: 4px solid #fbb034;
-      margin: 10px 0;
-      padding: 10px 15px;
-      position: relative;
-      background: #fafafa;
-      border-radius: 5px;
-    }
-    .event:before {
-      content: "●";
-      color: #fbb034;
-      position: absolute;
-      left: -12px;
-      top: 15px;
-      font-size: 14px;
-    }
-    .customs { color: red; font-weight: bold; }
-    .delivered { color: green; font-weight: bold; }
-    .in-transit { color: orange; }
-    .pending { color: #b8860b; font-weight: bold; }
-  </style>
-</head>
-<body>
+<script>
+  // Helper: format YYYY-MM-DD
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
 
-  <header>📦 UPS Mock Tracking System</header>
+  // Generate customs inspection events for 60 days
+  function generateCustomsEvents(startDate, days) {
+    let events = [];
+    let d = new Date(startDate);
+    let today = new Date();
 
-  <div class="tracker-box">
-    <p><b>Enter your tracking number:</b></p>
-    <input type="text" id="trackingNumber" placeholder="e.g. MTSO10842424US">
-    <button onclick="track()">Track</button>
+    for (let i = 0; i < days; i++) {
+      let newDate = new Date(d);
+      newDate.setDate(d.getDate() + i);
 
-    <div id="result" class="timeline"></div>
-  </div>
-
-  <script>
-    // Mock shipments database
-    const shipments = {
-      "MTSO10842424US": [
-        { date: "2025-08-25", location: "Texas, USA", status: "Shipment created ✅" },
-        { date: "2025-08-26", location: "Fort Worth, Texas, USA (UPS Office)", status: "Picked up ✅" },
-        { date: "2025-08-27", location: "UPS Global Hub, Louisville, Kentucky 40209, USA", status: "In transit to Japan ✅" },
-        { date: "2025-08-28", location: "Customs Office, Hanedakuko, Ota City, Tokyo 144-0041, Japan", status: "Stopped at Japan Customs Office 🛂" },
-        { date: "2025-08-29", location: "Shipment STOPPED", status: "Under Customs inspection 🛃" },
-        { date: "2025-08-30", location: "Shipment STOPPED", status: "Under Customs inspection 🛃" },
-        { date: "2025-08-31", location: "Shipment STOPPED", status: "Under Customs inspection 🛃" },
-        { date: "2025-09-01", location: "Shipment STOPPED", status: "Under Customs inspection 🛃" },
-        { date: "____-__-__", location: "Local UPS Facility, Ota City, Tokyo 144-0041, Japan", status: "Out for delivery [Pending ❗️]" },
-        { date: "____-__-__", location: "Sagami, Seven Town Sengendai Store 1F, Koshigaya-city, Saitama, Japan", status: "Delivering [Pending ❗️]" }
-      ]
-    };
-
-    function track() {
-      const tn = document.getElementById("trackingNumber").value.trim();
-      const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "";
-
-      if (shipments[tn]) {
-        shipments[tn].forEach(event => {
-          let cssClass = "";
-          if (event.status.toLowerCase().includes("customs")) cssClass = "customs";
-          if (event.status.toLowerCase().includes("delivered")) cssClass = "delivered";
-          if (event.status.toLowerCase().includes("in transit")) cssClass = "in-transit";
-          if (event.status.toLowerCase().includes("pending")) cssClass = "pending";
-
-          resultDiv.innerHTML += `
-            <div class="event ${cssClass}">
-              <b>${event.date}</b><br>
-              <i>${event.location}</i><br>
-              ${event.status}
-            </div>
-          `;
+      // Only include events up to today’s date
+      if (newDate <= today) {
+        events.push({
+          date: formatDate(newDate),
+          location: "Shipment STOPPED",
+          status: "Under Customs inspection 🛃"
         });
-      } else {
-        resultDiv.innerHTML = "<p style='color:red;'>❌ Tracking number not found</p>";
       }
     }
-  </script>
+    return events;
+  }
 
-</body>
-</html>
+  // Mock shipments database
+  const shipments = {
+    "MTS108424240US": [
+      { date: "2025-08-25", location: "Texas, USA", status: "Shipment created ✅" },
+      { date: "2025-08-26", location: "Fort Worth, Texas, USA (UPS Office)", status: "Picked up ✅" },
+      { date: "2025-08-27", location: "UPS Global Hub, Louisville, Kentucky 40209, USA", status: "In transit to Japan ✅" },
+      { date: "2025-08-28", location: "Customs Office, Hanedakuko, Ota City, Tokyo 144-0041, Japan", status: "Stopped at Japan Customs Office 🛂" },
+
+      // Dynamic daily Customs inspection logs
+      ...generateCustomsEvents("2025-09-01", 60),
+
+      { date: "____-__-__", location: "Local UPS Facility, Ota City, Tokyo 144-0041, Japan", status: "Out for delivery [Pending ❗️]" },
+      { date: "____-__-__", location: "Sagami, Seven Town Sengendai Store 1F, Koshigaya-city, Saitama, Japan", status: "Delivering [Pending ❗️]" }
+    ]
+  };
+
+  function track() {
+    const tn = document.getElementById("trackingNumber").value.trim();
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    if (shipments[tn]) {
+      shipments[tn].forEach(event => {
+        let cssClass = "";
+        if (event.status.toLowerCase().includes("customs")) cssClass = "customs";
+        if (event.status.toLowerCase().includes("delivered")) cssClass = "delivered";
+        if (event.status.toLowerCase().includes("in transit")) cssClass = "in-transit";
+        if (event.status.toLowerCase().includes("pending")) cssClass = "pending";
+
+        resultDiv.innerHTML += `
+          <div class="event ${cssClass}">
+            <b>${event.date}</b><br>
+            <i>${event.location}</i><br>
+            ${event.status}
+          </div>
+        `;
+      });
+    } else {
+      resultDiv.innerHTML = "<p style='color:red;'>❌ Tracking number not found</p>";
+    }
+  }
+</script>
